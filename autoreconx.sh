@@ -2,20 +2,20 @@
 #!/bin/bash
 
 set -e
-RED='\033[1;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-CYAN='\033[1;34m'
-MAGENTA='\033[1;35m'
-WHITE='\033[1;37m'
+RED=$'\033[1;31m'
+GREEN=$'\033[1;32m'
+YELLOW=$'\033[1;33m'
+BLUE=$'\033[1;34m'
+CYAN=$'\033[1;36m'
+WHITE=$'\033[1;37m'
+NC=$'\033[0m'
 
 START_TIME=$(date +%s)
 
 clear
 
-echo -e "${CYAN}"
-cat << "EOF"
+cat <<EOF
+${CYAN}
 
  █████╗ ██╗   ██╗████████╗ ██████╗ ██████╗ ███████╗ ██████╗ ███╗   ██╗██╗  ██╗
 ██╔══██╗██║   ██║╚══██╔══╝██╔═══██╗██╔══██╗██╔════╝██╔════╝ ████╗  ██║╚██╗██╔╝
@@ -23,52 +23,122 @@ cat << "EOF"
 ██╔══██║██║   ██║   ██║   ██║   ██║██╔══██╗██╔══╝  ██║      ██║╚██╗██║ ██╔██╗
 ██║  ██║╚██████╔╝   ██║   ╚██████╔╝██║  ██║███████╗╚██████╗ ██║ ╚████║██╔╝ ██╗
 ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
-
-                    Automated Reconnaissance Framework
-                           by CyberSpire
+${GREEN}               Automated Reconnaissance Framework${NC}
+${YELLOW}                      ~ By ${WHITE}CyberSpire${NC}
 
 EOF
-echo -e "${NC}"
+
+# =======================================
+# Help Function
+# =======================================
+
+show_help() {
+
+echo -e "${YELLOW}OPTIONS${NC}"
+echo -e "  ${CYAN}--target${NC}      Scan a single target domain."
+echo -e "  ${CYAN}--scope${NC}       Scan multiple targets from a scope file."
+echo -e "  ${CYAN}-h, --help${NC}    Display this help menu."
+echo
+
+echo -e "${YELLOW}USAGE${NC}"
+echo -e "  ${CYAN}$0 --target${NC} ${WHITE}<domain>${NC}"
+echo -e "  ${CYAN}$0 --scope${NC}  ${WHITE}<scope_file>${NC}"
+echo
+
+echo -e "${YELLOW}EXAMPLES${NC}"
+echo -e "  ${CYAN}$0 --target hackerone.com${NC}"
+echo -e "  ${CYAN}$0 --scope scope.txt${NC}"
+echo
+
+echo -e "${YELLOW}SCOPE FILE FORMAT${NC}"
+echo
+echo -e "  ${WHITE}example.com${NC}"
+echo -e "  ${WHITE}*.example.com${NC}"
+echo -e "  ${WHITE}api.example.com${NC}"
+echo
+
+echo -e "${CYAN}✔  Wildcards (*.example.com) are supported.${NC}"
+
+echo
+
+echo -e "${YELLOW}WHAT AUTORECON-X DOES${NC}"
+echo -e "  ${GREEN}✔${NC}  Subdomain Enumeration"
+echo -e "  ${GREEN}✔${NC}  Live Host Detection"
+echo -e "  ${GREEN}✔${NC}  URL Collection"
+echo -e "  ${GREEN}✔${NC}  JavaScript Discovery"
+echo -e "  ${GREEN}✔${NC}  Endpoint Extraction"
+echo -e "  ${GREEN}✔${NC}  GoLinkFinder Analysis"
+echo
+
+echo -e "${YELLOW}OUTPUT${NC}"
+echo -e "  Results are stored inside the ${GREEN}results/${NC} directory."
+echo
+
+echo -e "${YELLOW}NOTE${NC}"
+echo -e "  ${WHITE}Customize ${CYAN}filter_keywords.txt${WHITE} to improve high-value host detection.${NC}"
+echo -e "  ${WHITE}Example keywords:${NC} admin, api, auth, login, portal, vpn, internal, dev, stage."
+echo
+
+echo -e "${GREEN}Happy Hacking! 🚀${NC}"
+
+}
 
 # =======================================
 # Parse input arguments
 # =======================================
+
 while [[ "$#" -gt 0 ]]; do
-  case $1 in
-    --target)
-      TARGET="$2"
-      shift 2
-      ;;
-    --scope)
-      SCOPE_FILE="$2"
-      shift 2
-      ;;
-    *)
-      echo -e "${RED}[!] Unknown argument: $1${NC}"
-      echo -e "${CYAN}Usage:${NC}"
-      echo -e "${WHITE}  $0 --target domain.com${NC}"
-      echo -e "${WHITE}  $0 --scope scope.txt${NC}"
-      exit 1
-      ;;
-  esac
+    case "$1" in
+
+        --target)
+            TARGET="$2"
+            shift 2
+            ;;
+
+        --scope)
+            SCOPE_FILE="$2"
+            shift 2
+            ;;
+
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+
+        *)
+            echo -e "${RED}[!] Unknown argument: $1${NC}"
+            echo
+            show_help
+            exit 1
+            ;;
+    esac
 done
 
+# =======================================
+# Validation
+# =======================================
 
 # Check for incorrect --target usage
 if [[ -n "$TARGET" && "$TARGET" == *.txt ]]; then
-    echo -e "${RED}[!] It looks like you used --target with a file: '$TARGET'${NC}"
-    echo -e "${CYAN}    Did you mean to use --scope instead?${NC}"
-    echo -e "${WHITE}    Use:${NC} $0 --target example.com  ${NC}"
-    echo -e "${WHITE}    Or :${NC} $0 --scope scope.txt      ${NC}"
+    echo -e "${RED}[!] It looks like you used --target with a file:${NC} $TARGET"
+    echo
+    echo -e "${YELLOW}Did you mean:${NC}"
+    echo "  $0 --scope $TARGET"
     exit 1
 fi
 
+# Check if scope file exists
+if [[ -n "$SCOPE_FILE" && ! -f "$SCOPE_FILE" ]]; then
+    echo -e "${RED}[!] Scope file not found:${NC} $SCOPE_FILE"
+    exit 1
+fi
+
+# Ensure at least one input is provided
 if [[ -z "$TARGET" && -z "$SCOPE_FILE" ]]; then
-  echo -e "${RED}[!] No input provided.${NC}"
-  echo -e "${CYAN}Usage:${NC}"
-  echo -e "${WHITE}  $0 --target domain.com${NC}"
-  echo -e "${WHITE}  $0 --scope scope.txt${NC}"
-  exit 1
+    echo -e "${RED}[!] No input provided.${NC}"
+    echo
+    show_help
+    exit 1
 fi
 
 # =======================================
@@ -92,7 +162,7 @@ if [[ -s "$ALL_SUBS" ]]; then
     echo -e "${YELLOW}[!] Subdomain list already exists. Skipping Subdomain Enumeration.${NC} -> $ALL_SUBS"
 else
     if [ -n "$SCOPE_FILE" ]; then
-        echo -e "${MAGENTA}[*] Processing scope file...${NC}"
+        echo -e "${CYAN}[*] Processing scope file...${NC}"
         while IFS= read -r DOMAIN || [ -n "$DOMAIN" ]; do
             DOMAIN=$(echo "$DOMAIN" | tr -d ' ')  # Remove spaces and newlines
             if [[ "$DOMAIN" == \*.* ]]; then  # Detect wildcard domain
@@ -106,13 +176,13 @@ else
             fi
         done < "$SCOPE_FILE"
     else
-        echo -e "${MAGENTA}[*] Running subfinder on $TARGET...${NC}"
+        echo -e "${CYAN}[*] Running subfinder on $TARGET...${NC}"
         subfinder -d "$TARGET" -silent >> "$ALL_SUBS"
         assetfinder --subs-only "$TARGET" >> "$ALL_SUBS"
     fi
     sort -u "$ALL_SUBS" -o "$ALL_SUBS"
     echo -e "${GREEN}[DONE] Successfully Performed Subdomain Enumeration. ${NC}"
-    echo -e "${YELLOW}  • Found ${RED}$(wc -l < "$ALL_SUBS")${YELLOW} Subdomains${NC}"
+    echo -e "${YELLOW}  • Found ${GREEN}$(wc -l < "$ALL_SUBS")${YELLOW} Subdomains${NC}"
 fi
 
 # =======================================
@@ -121,7 +191,7 @@ fi
 if [[ -s "$LIVE" ]]; then
   echo -e "${YELLOW}[!] Live hosts file already exists. Skipping Httpx.${NC} -> $LIVE"
 else
-  echo -e "${MAGENTA}[*] Probing live hosts...${NC}"
+  echo -e "${CYAN}[*] Probing live hosts...${NC}"
   cat "$ALL_SUBS" | httpx-toolkit -silent > "$LIVE"
   echo -e "${YELLOW}  • Found ${RED}$(wc -l < "$LIVE")${YELLOW} Live Subdomains${NC}"
 fi
@@ -147,8 +217,8 @@ LOW_VALUE="$WORK_DIR/subs/low_value_hosts.txt"
 grep -iE "$KEYWORDS" "$LIVE" > "$HIGH_VALUE"
 grep -ivE "$KEYWORDS" "$LIVE" > "$LOW_VALUE"
 
-echo -e "${MAGENTA}[+] High-value subdomains: ${NC}$(wc -l < "$HIGH_VALUE")"
-echo -e "${MAGENTA}[+] Low-value subdomains:  ${NC}$(wc -l < "$LOW_VALUE")"
+echo -e "${GREEN}[+] High-value subdomains: ${NC}$(wc -l < "$HIGH_VALUE")"
+echo -e "${GREEN}[+] Low-value subdomains:  ${NC}$(wc -l < "$LOW_VALUE")"
 
 #echo "[DEBUG] Host categorization completed successfully"
 
@@ -166,10 +236,10 @@ read -p "Enter choice [1/2]: " choice
 CLEAN_DOMAINS="$WORK_DIR/subs/clean_domains.txt"
 
 if [[ "$choice" == "2" ]]; then
-    #echo -e "${MAGENTA}[*] Cleaning Domain list from both High and Low Value...${NC}"
+    #echo -e "${CYAN}[*] Cleaning Domain list from both High and Low Value...${NC}"
     cat "$HIGH_VALUE" "$LOW_VALUE" | sed -E 's@https?://@@' | cut -d'/' -f1 | sort -u > "$CLEAN_DOMAINS"
 else
-    #echo -e "${MAGENTA}[*] Cleaning Domain list from High Value only...${NC}"
+    #echo -e "${C}[*] Cleaning Domain list from High Value only...${NC}"
     cat "$HIGH_VALUE" | sed -E 's@https?://@@' | cut -d'/' -f1 | sort -u > "$CLEAN_DOMAINS"
 fi
 
@@ -185,11 +255,11 @@ KT_OUT="$WORK_DIR/urls/kt_raw.txt"
 HK_OUT="$WORK_DIR/urls/hk_raw.txt"
 FINAL_OUT="$WORK_DIR/urls/final_urls.txt"
 
-echo -e "${MAGENTA}\n[*] Processing URL Collection.${NC}"
+echo -e "${CYAN}\n[*] Processing URL Collection.${NC}"
 if [[ -s "$FINAL_OUT" ]]; then
     echo -e "${YELLOW}[!] URL Collection Already Done. Skipping...${NC} -> $FINAL_OUT"
 else
-    echo -e "${MAGENTA}[*] Collecting URLs via Gau, Waybackurls, Hakrawler & Katana...${NC}"
+    echo -e "${CYAN}[*] Collecting URLs via Gau, Waybackurls, Hakrawler & Katana...${NC}"
 
     # Clear existing raw output
     > "$GAU_OUT" > "$WB_OUT" > "$KT_OUT" > "$HK_OUT" > "$FINAL_OUT"
@@ -239,7 +309,7 @@ JS_OUTPUT="$JS_DIR/js_files_collected.txt"
 JS_KATANA="$JS_DIR/js_from_katana.txt"
 COMBINED_JS="$JS_DIR/final_js_files.txt"
 
-echo -e "${MAGENTA}[*] Processing JS Collection...${NC}"
+echo -e "${CYAN}[*] Processing JS Collection...${NC}"
 
 # Check if the live hosts file exists and is not empty
 if [[ ! -s "$LIVE" ]]; then
@@ -281,7 +351,7 @@ echo -e "${GREEN}[DONE] Combined JS files saved to ${NC} -> $COMBINED_JS"
 LINKS_OUTPUT="$WORK_DIR/urls/extracted_links.txt"
 TEMP_LINKS="$WORK_DIR/urls/temp_links.txt"
 
-echo -e "${MAGENTA}[*] Processing Link Extraction...${NC}"
+echo -e "${CYAN}[*] Processing Link Extraction...${NC}"
 
 # Check if the live hosts file exists and is not empty
 if [[ ! -s "$LIVE" ]]; then
@@ -296,7 +366,7 @@ else
     # Process each live domain
     while read -r domain; do
         [[ -z "$domain" ]] && continue
-        echo -e "${CYAN}[*] Extracting links from: $domain${NC}"
+        echo -e "${WHITE}[*] Extracting links from: $domain${NC}"
 
         # Run GoLinkFinder and write to temporary file
         if GoLinkFinder -d "$domain" > "$TEMP_LINKS" 2>/dev/null; then
@@ -331,7 +401,7 @@ fi
 
 PARAM_URLS="$WORK_DIR/params/params.txt"
 
-echo -e "${MAGENTA}[*] Filtering URLs having parameters...${NC}"
+echo -e "${CYAN}[*] Filtering URLs having parameters...${NC}"
 
 # Check if file already exists and is not empty
 if [[ -s "$PARAM_URLS" ]]; then

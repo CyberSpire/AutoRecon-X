@@ -88,7 +88,6 @@ Run
 
 ```bash
 chmod +x autoreconx.sh
-
 ./autoreconx.sh --target example.com
 ```
 
@@ -176,4 +175,4 @@ The author is **not responsible** for any misuse or unauthorized activities perf
 
 ---
 
-# ⭐ If you find this project useful, consider giving it a star!
+## ⭐ If you find this project useful, consider giving it a star!

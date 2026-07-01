@@ -16,3 +16,15 @@ payments
 db
 git
 console
+root
+manager
+backup
+database
+archive
+corp
+exchange
+grafana
+jira
+slack
+github
+secure
