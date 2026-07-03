@@ -13,14 +13,16 @@ GoLinkFinder
 curl
 )
 
-YELLOW='\033[1;33m'
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
-RED='\033[1;31m'
-CYAN='\033[1;34m'
+RED=$'\033[1;31m'
+GREEN=$'\033[1;32m'
+YELLOW=$'\033[1;33m'
+BLUE=$'\033[1;34m'
+CYAN=$'\033[1;36m'
+WHITE=$'\033[1;37m'
+NC=$'\033[0m'
 
-echo -e "${CYAN}"
-cat << "EOF"
+cat <<EOF
+${CYAN}
 
  █████╗ ██╗   ██╗████████╗ ██████╗ ██████╗ ███████╗ ██████╗ ███╗   ██╗██╗  ██╗
 ██╔══██╗██║   ██║╚══██╔══╝██╔═══██╗██╔══██╗██╔════╝██╔════╝ ████╗  ██║╚██╗██╔╝
@@ -28,12 +30,10 @@ cat << "EOF"
 ██╔══██║██║   ██║   ██║   ██║   ██║██╔══██╗██╔══╝  ██║      ██║╚██╗██║ ██╔██╗
 ██║  ██║╚██████╔╝   ██║   ╚██████╔╝██║  ██║███████╗╚██████╗ ██║ ╚████║██╔╝ ██╗
 ╚═╝  ╚═╝ ╚═════╝    ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝
-
-                    Automated Reconnaissance Framework
-                           by CyberSpire
+${GREEN}               Automated Reconnaissance Framework${NC}
+${YELLOW}                      ~ By ${WHITE}CyberSpire${NC}
 
 EOF
-echo -e "${NC}"
 
 echo -e "${YELLOW}Checking installed tools...${NC}"
 echo ""

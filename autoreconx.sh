@@ -214,8 +214,8 @@ fi
 HIGH_VALUE="$WORK_DIR/subs/high_value_hosts.txt"
 LOW_VALUE="$WORK_DIR/subs/low_value_hosts.txt"
 
-grep -iE "$KEYWORDS" "$LIVE" > "$HIGH_VALUE"
-grep -ivE "$KEYWORDS" "$LIVE" > "$LOW_VALUE"
+grep -iE "$KEYWORDS" "$LIVE" > "$HIGH_VALUE" || true
+grep -ivE "$KEYWORDS" "$LIVE" > "$LOW_VALUE" || true
 
 echo -e "${GREEN}[+] High-value subdomains: ${NC}$(wc -l < "$HIGH_VALUE")"
 echo -e "${GREEN}[+] Low-value subdomains:  ${NC}$(wc -l < "$LOW_VALUE")"
